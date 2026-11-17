@@ -190,7 +190,7 @@ const roadsG=el('g',{},g);
 const texts=[];
 const txt=(s,la,lo,cls,fs,dx,dy,anchor,parent=g)=>{const [x,y]=P(la,lo);const t=el('text',{class:cls,'text-anchor':anchor||'start'},parent);t.textContent=s;texts.push({t,x,y,fs,dx,dy});return t};
 
-const HOME=[26.157,-80.286];
+const HOME=[26.172,-80.288];
 {const [sx,sy]=P(...HOME); el('circle',{cx:sx,cy:sy,r:10/69*K,class:'ring'},g);}
 const CITIES=[['Jacksonville',30.332,-81.656],['St Augustine',29.894,-81.314],['Daytona Beach',29.21,-81.02],['Orlando',28.538,-81.379],['Tampa',27.95,-82.457],['Tallahassee',30.438,-84.281],['Gainesville',29.652,-82.325],['Fort Myers',26.64,-81.872],['West Palm Beach',26.715,-80.06],['Fort Lauderdale',26.122,-80.143],['Miami',25.775,-80.195],['Key West',24.555,-81.78]];
 CITIES.forEach(([n,la,lo])=>{const t=txt(n,la,lo,'lbl',11,-9,-9,'end');t.__act=()=>showPlace({t:n,k:'City',sub:'Repeaters nearest this city',la,lo})});
@@ -213,7 +213,7 @@ const hv=(a,b,c,d)=>{const q=Math.PI/180,x=Math.sin((c-a)*q/2)**2+Math.cos(a*q)*
 const PLACES=[
  {id:'home',t:'Miguel',k:'Home',sub:'Sunrise (general area, not an exact address)',la:HOME[0],lo:HOME[1]},
  {id:'sister',t:'Sister',k:'Family',sub:'Plantation (general area)',la:26.1276,lo:-80.2331},
- {id:'parents',t:'Parents',k:'Family',sub:'West Sunrise (general area)',la:26.165,lo:-80.31},
+ {id:'parents',t:'Parents',k:'Family',sub:'West Sunrise (general area)',la:26.148,lo:-80.312},
  {id:'brother',t:'Brother',k:'Family',sub:'Clay County, near Jacksonville (general area)',la:30.09,lo:-81.72}];
 PLACES.forEach(p=>{const [x,y]=P(p.la,p.lo);p.x=x;p.y=y;p.m=el('path',{class:p.id==='home'?'home':'kinmk'},famG);const tt=el('title',{},p.m);tt.textContent=p.t;
   const d=p.id==='home'?'':` · ~${Math.round(hv(HOME[0],HOME[1],p.la,p.lo))} mi`;
