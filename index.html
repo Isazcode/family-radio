@@ -39,6 +39,22 @@ svg.drag{cursor:grabbing}
 .keys{fill:none;stroke:var(--land);stroke-width:4;stroke-linecap:round;stroke-dasharray:6 5;vector-effect:non-scaling-stroke}
 .county{stroke:var(--border);stroke-dasharray:5 4;stroke-width:1;vector-effect:non-scaling-stroke;fill:none}
 .ring{fill:none;stroke:var(--family);stroke-dasharray:3 4;stroke-width:1.2;vector-effect:non-scaling-stroke;opacity:.7}
+.cov{stroke-width:1.3;vector-effect:non-scaling-stroke;pointer-events:none}
+.cov.out{fill-opacity:.07;stroke-dasharray:4 4;stroke-opacity:.8}
+.cov.ht{fill-opacity:.13;stroke-opacity:.9}
+.cov.far{fill:var(--sar);fill-opacity:.05;stroke:var(--sar);stroke-opacity:.45;stroke-dasharray:2 4}
+.cov.spx{fill:var(--kin);fill-opacity:.12;stroke:var(--kin);stroke-dasharray:3 3}
+.rline{fill:none;stroke-width:1.6;vector-effect:non-scaling-stroke;pointer-events:none;stroke-linecap:round}
+.rline.sar{stroke:var(--sar);stroke-dasharray:1 5;opacity:.9}
+.rline.rpt{stroke:var(--ink);opacity:.55}
+.rline.kin{stroke:var(--kin);stroke-width:2.2;opacity:.9}
+.mk.reach{stroke:var(--sar);stroke-width:2.5;vector-effect:non-scaling-stroke}
+.rch{display:grid;gap:4px;font-size:12.5px;border-top:1px solid var(--line);padding-top:8px}
+.rch b{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.rch .ln{display:flex;gap:6px;align-items:baseline}
+.rch .ln i{font-style:normal;font:600 11px var(--mono);border-radius:4px;padding:0 5px;color:#fff;white-space:nowrap}
+.rch .est{color:var(--muted);font-size:11.5px}
+#vReach[aria-pressed="true"]{background:var(--sar);color:#fff;border-color:var(--sar)}
 .link{fill:none;stroke:var(--sar);stroke-width:2;stroke-dasharray:2 6;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:.85}
 .land.other{opacity:.55}
 .cty{fill:none;stroke:var(--border);stroke-width:.6;opacity:.55;vector-effect:non-scaling-stroke}
@@ -154,7 +170,7 @@ input[type=search]{width:100%;padding:7px 10px;border:1px solid var(--line);bord
 <div id="mapwrap">
   <svg id="map" role="img" aria-label="Map of Florida repeaters, family homes and the SARnet link"></svg>
   <div class="ctrl">
-    <button id="vEast">Miami to Jacksonville</button><button id="vSouth">South Florida</button><button id="vJax">Jacksonville</button><button id="vAll">All Florida</button>
+    <button id="vEast">Miami to Jacksonville</button><button id="vSouth">South Florida</button><button id="vJax">Jacksonville</button><button id="vAll">All Florida</button><button id="vReach" aria-pressed="true" title="Show what each station can reach">Reach</button>
     <button class="z" id="zin" aria-label="Zoom in">+</button><button class="z" id="zout" aria-label="Zoom out">−</button><button class="z" id="zhome" aria-label="Zoom to my home" title="Zoom to Sunrise">⌂</button>
   </div>
   <div class="foot">Scroll, pinch or double-click to zoom. Tap any pin, family marker, city or county name for details. Family pins show a general area only. Repeater pins sit at the listed city or site. Status: RepeaterBook, Nov 17 2026. Roads and county lines: Natural Earth and US Census data.</div>
@@ -201,6 +217,7 @@ const groups={}; R.forEach(r=>{const k=r.lat+','+r.lon;(groups[k]=groups[k]||[])
 Object.values(groups).forEach(a=>{if(a.length<2){a[0].x=P(a[0].lat,a[0].lon);return}
   a.forEach((r,i)=>{const ang=i/a.length*2*Math.PI, rad=0.006+0.0012*a.length; r.x=P(r.lat+rad*Math.sin(ang), r.lon+rad*Math.cos(ang)/COS)})});
 const linkLine=el('path',{class:'link',d:`M${ftl.x[0]},${ftl.x[1]}Q${P(28.3,-80.2).join(',')} ${jax.x[0]},${jax.x[1]}`},g);
+const reachG=el('g',{},g);
 const mk=el('g',{},g);
 const famG=el('g',{},g);
 R.sort((a,b)=>(a.role||a.sar?1:0)-(b.role||b.sar?1:0)).forEach((r,i)=>{
@@ -253,6 +270,68 @@ document.getElementById('vSouth').onclick=()=>view('south');
 document.getElementById('vJax').onclick=()=>view('jax');
 document.getElementById('vAll').onclick=()=>view('all');
 new ResizeObserver(apply).observe(svg);
+
+// ---------- reach: what each station or family radio can talk to ----------
+// Estimates only: real range depends on terrain, buildings, antenna and power.
+const COVER={'W4MOT|146.79':35};                 // RepeaterBook published radius
+const cov=r=>COVER[r.call+'|'+r.rx]||(r.sar?40:r.band==='2m'?30:22); // car/home-antenna range (mi); SARnet nodes sit on tall towers
+const htR=r=>Math.round(cov(r)*0.55);            // handheld talk-in range (mi)
+const SPX=3;                                     // handheld-to-handheld simplex (mi)
+const LINKS=[['N4RQY|146.655','N4RQY|444.575']]; // full-time links outside SARnet
+const key=r=>r.call+'|'+r.rx;
+const linked=r=>{const out=new Set();if(r.sar)R.forEach(x=>{if(x.sar&&x!==r)out.add(x)});
+  LINKS.forEach(([a,b])=>{if(key(r)===a){const o=R.find(x=>key(x)===b);if(o)out.add(o)}if(key(r)===b){const o=R.find(x=>key(x)===a);if(o)out.add(o)}});return[...out]};
+const mi=m=>m/69*K;
+let reachOn=true;
+const clearReach=()=>{reachG.innerHTML='';R.forEach(x=>x.m.classList.remove('reach'))};
+const circ=(la,lo,m,cls,col)=>{const [x,y]=P(la,lo);const c=el('circle',{cx:x,cy:y,r:mi(m),class:'cov '+cls},reachG);if(col){c.style.fill=col;c.style.stroke=col}return c};
+const line=(a,b,cls)=>el('path',{d:`M${a[0]},${a[1]}L${b[0]},${b[1]}`,class:'rline '+cls},reachG);
+const col=r=>r.band==='2m'?'var(--vhf)':'var(--uhf)';
+const pill=(t,c)=>`<i style="background:${c}">${t}</i>`;
+const famReach=(p,r)=>hv(p.la,p.lo,r.lat,r.lon)<=htR(r);
+function drawStation(r){
+  clearReach();if(!reachOn)return '';
+  const L=linked(r);
+  L.forEach(o=>{circ(o.lat,o.lon,htR(o),'far');line(r.x,o.x,'sar');o.m.classList.add('reach')});
+  circ(r.lat,r.lon,cov(r),'out',col(r));circ(r.lat,r.lon,htR(r),'ht',col(r));
+  const all=[r,...L];
+  const fam=PLACES.map(p=>{const via=all.filter(x=>famReach(p,x)).sort((a,b)=>hv(p.la,p.lo,a.lat,a.lon)-hv(p.la,p.lo,b.lat,b.lon))[0];return via?{p,via}:null}).filter(Boolean);
+  fam.forEach(({p,via})=>line([p.x,p.y],via.x,'kin'));
+  let h=`<div class="rch"><b>Reach</b>`;
+  h+=`<div class="ln">${pill('~'+htR(r)+' mi',col(r))}<span>Handheld range (solid circle). Car or rooftop antenna: ~${cov(r)} mi (dashed).</span></div>`;
+  if(r.sar)h+=`<div class="ln">${pill('SARnet','var(--sar)')}<span>Linked full-time to ${L.length} other repeaters across Florida. Anything said here is heard on all of them (dotted green lines).</span></div>`;
+  else if(L.length)h+=`<div class="ln">${pill('Linked','var(--sar)')}<span>Also comes out on ${L.map(o=>o.call+' '+o.rx.toFixed(3)).join(', ')}.</span></div>`;
+  else h+=`<div class="ln">${pill('Local','var(--muted)')}<span>Not linked. Only people inside the circle hear it.</span></div>`;
+  h+=fam.length?`<div class="ln">${pill('Family','var(--kin)')}<span>Can use this: ${fam.map(({p,via})=>p.t+(via===r?'':' (via '+via.call+')')).join(', ')}.</span></div>`
+               :`<div class="ln">${pill('Family','var(--muted)')}<span>No family radio is within handheld range.</span></div>`;
+  return h+`<div class="est">Estimated from typical range. Terrain, buildings, antenna and power change it.</div></div>`;
+}
+function drawPlace(p){
+  clearReach();if(!reachOn||!p.id)return '';
+  circ(p.la,p.lo,SPX,'spx');
+  const mine=R.filter(r=>famReach(p,r)).sort((a,b)=>(b.role?1:0)-(a.role?1:0)||hv(p.la,p.lo,a.lat,a.lon)-hv(p.la,p.lo,b.lat,b.lon));
+  mine.forEach(r=>{line([p.x,p.y],r.x,'rpt');r.m.classList.add('reach')});
+  const sar=mine.filter(r=>r.sar);
+  let h=`<div class="rch"><b>What this radio can reach</b>`;
+  h+=`<div class="ln">${pill(SPX+' mi','var(--kin)')}<span>Radio-to-radio on FAM 2M (purple circle), no tower.</span></div>`;
+  h+=`<div class="ln">${pill(mine.length+' rptrs','var(--uhf)')}<span>Repeaters a handheld here should be able to reach (gray lines).</span></div>`;
+  if(sar.length)h+=`<div class="ln">${pill('Statewide','var(--sar)')}<span>Through SARnet on ${sar[0].call} ${sar[0].rx.toFixed(3)} (${chLabel(sar[0])}).</span></div>`;
+  h+=`<b style="margin-top:4px">Talk to family</b>`;
+  PLACES.filter(q=>q!==p).forEach(q=>{
+    const d=hv(p.la,p.lo,q.la,q.lo);let how,c;
+    const shared=mine.filter(r=>famReach(q,r));
+    const qs=R.filter(r=>r.sar&&famReach(q,r));
+    if(d<=SPX){how=`Direct on FAM 2M (ch 1), ${d.toFixed(1)} mi apart`;c='var(--kin)'}
+    else if(shared.length){const s=shared[0];how=`${s.call} ${s.rx.toFixed(3)} (${chLabel(s)})`;c=col(s)}
+    else if(sar.length&&qs.length){how=`SARnet: ${sar[0].call} ${sar[0].rx.toFixed(3)} here → ${qs[0].call} ${qs[0].rx.toFixed(3)} there`;c='var(--sar)'}
+    else {how='No path with a handheld. Try from higher ground or a better antenna.';c='var(--muted)'}
+    if(d<=SPX||shared.length)line([p.x,p.y],[q.x,q.y],'kin');
+    h+=`<div class="ln">${pill(q.t,c)}<span>${how}</span></div>`});
+  return h+`<div class="est">Estimated from typical handheld range. Terrain, buildings, antenna and power change it.</div></div>`;
+}
+document.getElementById('vReach').onclick=e=>{reachOn=!reachOn;e.currentTarget.setAttribute('aria-pressed',reachOn);
+  if(cur)select(cur,true);else if(lastPlace)showPlace(lastPlace);else clearReach()};
+let lastPlace=null;
 // sidebar
 const f={region:'All',band:'All',q:''};
 const chips=(id,key,vals)=>{const box=document.getElementById(id);vals.forEach(v=>{const b=document.createElement('button');b.className='chip';b.id=id+'-'+v.replace(/\W/g,'');b.textContent=v;b.setAttribute('aria-pressed',v===f[key]);b.onclick=()=>{f[key]=v;box.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c===b));render()};box.appendChild(b)})};
@@ -287,6 +366,7 @@ function select(r,fromMap){
   ${kvs([['Listen (RX)',r.rx.toFixed(4)],['Transmit (TX)',r.tx.toFixed(4)],['Offset',r.dup+r.off.toFixed(3)],['TX tone',r.tone?r.tone+' Hz':'none'],['From Miguel','~'+d.toFixed(0)+' mi'],['From Brother','~'+b.toFixed(0)+' mi']])}
   <div class="chs">${ch.map(c=>`<span>${c}</span>`).join('')}</div>
   ${r.role==='link'?'<button class="nr" id="howlink">How the family link works<span>›</span></button>':''}`;
+  lastPlace=null;document.getElementById('card').insertAdjacentHTML('beforeend',drawStation(r));
   const hb=document.getElementById('howlink'); if(hb) hb.onclick=showLink;
   render(); if(r.row) r.row.scrollIntoView({block:'nearest'});
   if(!fromMap){const [x,y]=r.x;if(x<vb.x||x>vb.x+vb.w||y<vb.y||y>vb.y+vb.h){vb.x=x-vb.w/2;vb.y=y-vb.h/2;apply()}}
@@ -299,10 +379,11 @@ function showPlace(p){
   ${kvs([['Coordinates',p.la.toFixed(4)+', '+p.lo.toFixed(4)],['From Miguel',p.id==='home'?'—':'~'+d.toFixed(0)+' mi']])}`;
   if(p.id==='brother') h+=`<div class="how"><b>To reach the family:</b><span>Jacksonville ch 1 (SARnet Jacksonville 444.700, tone 127.3) comes out on W4AB 442.850 in Fort Lauderdale, which is ch 26 on your radios.</span></div>`;
   h+=`<div class="sub">Closest repeaters (tap one for details):</div><div class="near">`+near.map(([dd,r])=>`<button class="nr" data-i="${r.i}"><b>${r.rx.toFixed(3)}</b> ${r.call} · ${r.place} · ${dd.toFixed(1)} mi<span>${chLabel(r)}</span></button>`).join('')+`</div>`;
+  lastPlace=p;h+=drawPlace(p);
   const c=document.getElementById('card');c.innerHTML=h;c.querySelectorAll('button.nr').forEach(b=>b.onclick=()=>select(R.find(x=>x.i===+b.dataset.i),false));
 }
 function showLink(){
-  cur=null;R.forEach(x=>x.m.classList.toggle('sel',x===ftl||x===jax));render();
+  cur=null;lastPlace=null;drawStation(ftl);R.forEach(x=>x.m.classList.toggle('sel',x===ftl||x===jax));render();
   document.getElementById('card').innerHTML=`<div class="cardtop"><span class="call">Family link</span><span class="pill psar">SARnet</span></div>
   <div class="sub">Both repeaters are full-time on SARnet, Florida's statewide linked network. Anything said on one is heard on the other, and on every other SARnet repeater in the state.</div>
   <div class="how"><b>South Florida radios</b><span>Channel 26 · W4AB 442.850, tone 110.9 (Fort Lauderdale)</span></div>
