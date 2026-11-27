@@ -11,18 +11,18 @@
 :root{
   --bg:#f3f5f4; --panel:#ffffff; --ink:#18232a; --muted:#5d6b73; --line:#d7dee1;
   --sea:#d6e6ee; --land:#eef0e8; --lake:#c9dde8; --border:#9aa9a2;
-  --vhf:#c26a00; --uhf:#0f7f86; --family:#c8102e; --kin:#7a3cc8; --sar:#2e7d32; --sel:#18232a; --road:#e3a857; --road2:#cbc4b4;
+  --vhf:#c26a00; --uhf:#0f7f86; --family:#c8102e; --kin:#7a3cc8; --sar:#2e7d32; --sel:#18232a; --road:#e3a857; --road2:#cbc4b4; --wx:#4a56c4;
   --display:"IBM Plex Sans Condensed","Arial Narrow",sans-serif;
   --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0f161a; --panel:#151f25; --ink:#e3eaee; --muted:#93a3ab; --line:#26343c;
   --sea:#10242f; --land:#1b2529; --lake:#163445; --border:#4f6068;
-  --vhf:#f0a23a; --uhf:#3cc2c8; --family:#ff5a6e; --kin:#b88cff; --sar:#6fcf73; --sel:#ffffff; --road:#9b7340; --road2:#3a474d; color-scheme:dark;}}
+  --vhf:#f0a23a; --uhf:#3cc2c8; --family:#ff5a6e; --kin:#b88cff; --sar:#6fcf73; --sel:#ffffff; --road:#9b7340; --road2:#3a474d; --wx:#8c96ff; color-scheme:dark;}}
 :root[data-theme="dark"]{
   --bg:#0f161a; --panel:#151f25; --ink:#e3eaee; --muted:#93a3ab; --line:#26343c;
   --sea:#10242f; --land:#1b2529; --lake:#163445; --border:#4f6068;
-  --vhf:#f0a23a; --uhf:#3cc2c8; --family:#ff5a6e; --kin:#b88cff; --sar:#6fcf73; --sel:#ffffff; --road:#9b7340; --road2:#3a474d; color-scheme:dark;}
+  --vhf:#f0a23a; --uhf:#3cc2c8; --family:#ff5a6e; --kin:#b88cff; --sar:#6fcf73; --sel:#ffffff; --road:#9b7340; --road2:#3a474d; --wx:#8c96ff; color-scheme:dark;}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--ink);font:14px/1.45 var(--body);display:grid;grid-template-columns:1fr 390px;grid-template-rows:auto 1fr;}
@@ -55,6 +55,16 @@ svg.drag{cursor:grabbing}
 .rch .ln i{font-style:normal;font:600 11px var(--mono);border-radius:4px;padding:0 5px;color:#fff;white-space:nowrap}
 .rch .est{color:var(--muted);font-size:11.5px}
 #vReach[aria-pressed="true"]{background:var(--sar);color:#fff;border-color:var(--sar)}
+.wxmk{fill:var(--wx);stroke:var(--panel);stroke-width:1.5;vector-effect:non-scaling-stroke;cursor:pointer}
+.wxmk.sel{stroke:var(--sel);stroke-width:3}
+.wxhide .wxmk{display:none}
+.pwx{background:color-mix(in srgb,var(--wx) 16%,var(--panel));color:var(--wx)}
+.wxb{display:grid;gap:5px;border-top:1px solid var(--line);padding-top:8px;font-size:12.5px}
+.wxb>b{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.wxr{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 9px;color:var(--ink);font:inherit;cursor:pointer}
+.wxr .fq{font:600 15px var(--mono);color:var(--wx);grid-row:span 2;align-self:center}
+.wxr .ch{color:var(--muted);font-size:11.5px}
+#vWx[aria-pressed="true"]{background:var(--wx);color:#fff;border-color:var(--wx)}
 .link{fill:none;stroke:var(--sar);stroke-width:2;stroke-dasharray:2 6;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:.85}
 .land.other{opacity:.55}
 .cty{fill:none;stroke:var(--border);stroke-width:.6;opacity:.55;vector-effect:non-scaling-stroke}
@@ -141,6 +151,7 @@ input[type=search]{width:100%;padding:7px 10px;border:1px solid var(--line);bord
     <span><i class="dot" style="background:transparent;border:3px solid var(--family)"></i>Family repeater</span>
     <span><i class="dot" style="background:var(--family);border-radius:2px"></i>Miguel</span>
     <span><i class="dot" style="background:var(--kin);border-radius:1px;transform:rotate(45deg) scale(.85)"></i>Family</span>
+    <span><i class="dot" style="background:var(--wx);border-radius:1px"></i>NOAA weather</span>
   </div>
 </header>
 <div id="dlpanel" hidden>
@@ -170,10 +181,10 @@ input[type=search]{width:100%;padding:7px 10px;border:1px solid var(--line);bord
 <div id="mapwrap">
   <svg id="map" role="img" aria-label="Map of Florida repeaters, family homes and the SARnet link"></svg>
   <div class="ctrl">
-    <button id="vEast">Miami to Jacksonville</button><button id="vSouth">South Florida</button><button id="vJax">Jacksonville</button><button id="vAll">All Florida</button><button id="vReach" aria-pressed="true" title="Show what each station can reach">Reach</button>
+    <button id="vEast">Miami to Jacksonville</button><button id="vSouth">South Florida</button><button id="vJax">Jacksonville</button><button id="vAll">All Florida</button><button id="vReach" aria-pressed="true" title="Show what each station can reach">Reach</button><button id="vWx" aria-pressed="true" title="Show NOAA weather radio transmitters">Weather</button>
     <button class="z" id="zin" aria-label="Zoom in">+</button><button class="z" id="zout" aria-label="Zoom out">−</button><button class="z" id="zhome" aria-label="Zoom to my home" title="Zoom to Sunrise">⌂</button>
   </div>
-  <div class="foot">Scroll, pinch or double-click to zoom. Tap any pin, family marker, city or county name for details. Family pins show a general area only. Repeater pins sit at the listed city or site. Status: RepeaterBook, Nov 17 2026. Roads and county lines: Natural Earth and US Census data.</div>
+  <div class="foot">Scroll, pinch or double-click to zoom. Tap any pin, family marker, city or county name for details. Family pins show a general area only. Repeater pins sit at the listed city or site. Status: RepeaterBook, Nov 17 2026. Weather radio: NOAA/weather.gov county listing, Nov 2026. Type a city or county in the search box to see its weather channels. Roads and county lines: Natural Earth and US Census data.</div>
 </div>
 <aside>
   <div id="card"></div>
@@ -242,7 +253,7 @@ const VIEWS={east:[[30.85,-82.4],[24.85,-79.85]],south:[[27.0,-80.95],[25.3,-79.
 let vb;
 const view=k=>{const [a,b]=VIEWS[k];const [x1,y1]=P(...a),[x2,y2]=P(...b);vb={x:x1,y:y1,w:x2-x1,h:y2-y1};apply()};
 const apply=()=>{svg.setAttribute('viewBox',`${vb.x} ${vb.y} ${vb.w} ${vb.h}`);const cw=svg.clientWidth,ch=svg.clientHeight;const s=cw?Math.max(vb.w/cw,vb.h/ch):1;
-  R.forEach(r=>r.m.setAttribute('r',(r.role?8:r.sar?7:5.5)*s));
+  R.forEach(r=>r.m.setAttribute('r',(r.role?8:r.sar?7:5.5)*s));if(typeof wxSize==='function')wxSize(s);
   PLACES.forEach(p=>{const a=(p.id==='home'?9:7.5)*s,x=p.x,y=p.y;p.m.setAttribute('d',p.id==='home'?`M${x},${y-a}L${x+a*0.95},${y-a*0.1}L${x+a*0.65},${y-a*0.1}L${x+a*0.65},${y+a*0.85}L${x-a*0.65},${y+a*0.85}L${x-a*0.65},${y-a*0.1}L${x-a*0.95},${y-a*0.1}Z`:`M${x},${y-a}L${x+a},${y}L${x},${y+a}L${x-a},${y}Z`)});
   texts.forEach(o=>{o.t.setAttribute('font-size',o.fs*s);o.t.setAttribute('x',o.x+o.dx*s);o.t.setAttribute('y',o.y+o.dy*s)})};
 const zoom=(f,cx=vb.x+vb.w/2,cy=vb.y+vb.h/2)=>{const nw=Math.min(Math.max(vb.w*f,3),12000);const k=nw/vb.w;vb={x:cx-(cx-vb.x)*k,y:cy-(cy-vb.y)*k,w:nw,h:vb.h*k};apply()};
@@ -332,28 +343,74 @@ function drawPlace(p){
 document.getElementById('vReach').onclick=e=>{reachOn=!reachOn;e.currentTarget.setAttribute('aria-pressed',reachOn);
   if(cur)select(cur,true);else if(lastPlace)showPlace(lastPlace);else clearReach()};
 let lastPlace=null;
+
+// ---------- NOAA Weather Radio (source: weather.gov NWR county coverage listing, Nov 2026) ----------
+const WXS=[{"c":"KIH26","s":"Daytona Beach","f":162.4,"la":29.1737,"lo":-81.157},{"c":"KIH63","s":"Orlando","f":162.475,"la":28.5943,"lo":-81.4199},{"c":"KPS505","s":"Sumterville","f":162.5,"la":28.763889,"lo":-82.059722},{"c":"WXK83","s":"Fort Myers","f":162.475,"la":26.62966,"lo":-81.8103},{"c":"WWG92","s":"Naples","f":162.525,"la":26.183111,"lo":-81.574722},{"c":"KIH24","s":"Tallahassee","f":162.4,"la":30.566667,"lo":-84.043889},{"c":"WXJ60","s":"Gainesville","f":162.475,"la":29.7094,"lo":-82.3903},{"c":"WWF38","s":"Inverness","f":162.4,"la":28.8436,"lo":-82.484611},{"c":"KWN38","s":"Morriston","f":162.55,"la":29.2844,"lo":-82.663889},{"c":"WWF86","s":"East Point","f":162.5,"la":29.7325,"lo":-84.89},{"c":"WNG633","s":"Sneads","f":162.425,"la":30.639167,"lo":-84.979722},{"c":"WWF88","s":"Salem","f":162.425,"la":29.912944,"lo":-83.444167},{"c":"KEC38","s":"Largo","f":162.45,"la":27.848056,"lo":-82.763333},{"c":"KHB32","s":"Tampa Bay","f":162.55,"la":27.842533,"lo":-82.262472},{"c":"WWG59","s":"Venice","f":162.4,"la":27.133056,"lo":-82.394444},{"c":"WWF85","s":"Ocala","f":162.525,"la":29.178065,"lo":-82.15912},{"c":"WWF69","s":"Fort Pierce","f":162.425,"la":27.4489,"lo":-80.4089},{"c":"KEC50","s":"West Palm Beach","f":162.475,"la":26.749722,"lo":-80.0675},{"c":"WZ2531","s":"Hialeah (Spanish)","f":162.5,"la":25.8397,"lo":-80.2925},{"c":"KHB34","s":"Miami","f":162.55,"la":25.967861,"lo":-80.209333},{"c":"WNG663","s":"Princeton","f":162.425,"la":25.537583,"lo":-80.403639},{"c":"WXJ95","s":"Key West","f":162.4,"la":24.6598,"lo":-81.5383},{"c":"WWG60","s":"Tea Table Key","f":162.45,"la":24.8957,"lo":-80.6638},{"c":"KHB39","s":"Jacksonville","f":162.55,"la":30.2761,"lo":-81.5647},{"c":"KEC86","s":"Pensacola","f":162.4,"la":30.588611,"lo":-87.070556},{"c":"WXM58","s":"Belle Glade","f":162.4,"la":26.661111,"lo":-80.636611},{"c":"WXJ70","s":"Melbourne","f":162.55,"la":28.2283,"lo":-80.7567},{"c":"WXK83A","s":"Sebring","f":162.5,"la":27.561928,"lo":-81.49364},{"c":"WNG522","s":"Palatka","f":162.425,"la":29.7375,"lo":-81.6691},{"c":"KEB97","s":"Lake City","f":162.4,"la":30.1939,"lo":-82.6347},{"c":"KGG67","s":"Panama City","f":162.55,"la":30.1472,"lo":-85.7128},{"c":"WWH20","s":"Westville","f":162.45,"la":30.8275,"lo":-85.926944},{"c":"WNG646","s":"Brewton","f":162.475,"la":31.264722,"lo":-87.125833},{"c":"WWH31","s":"Valdosta","f":162.5,"la":30.970278,"lo":-83.286667},{"c":"KZZ70","s":"Blakely","f":162.525,"la":31.402222,"lo":-84.959167}], WXC={"Alachua":["012001",["WXJ60"]],"Baker":["012003",["WXJ60","KHB39"]],"Bay":["012005",["KGG67"]],"Bradford":["012007",["WXJ60"]],"Brevard":["012009",["KIH26","WXJ70","KIH63"]],"Broward":["012011",["KHB34","KEC50","WZ2531"]],"Calhoun":["012013",["KGG67","WNG633"]],"Charlotte":["012015",["WXK83","WWG59"]],"Citrus":["012017",["WWF38","KWN38","KPS505"]],"Clay":["012019",["KHB39","WNG522","WXJ60"]],"Collier":["012021",["WWG92","WXK83"]],"Columbia":["012023",["KEB97","WXJ60"]],"DeSoto":["012027",["WXK83","WWG59"]],"Dixie":["012029",["WXJ60","KWN38","WWF88"]],"Duval":["012031",["KHB39"]],"Escambia":["012033",["KEC86","WNG646"]],"Flagler":["012035",["KIH26","WNG522"]],"Franklin":["012037",["WWF86","KIH24"]],"Gadsden":["012039",["KIH24","WNG633"]],"Gilchrist":["012041",["WXJ60"]],"Glades":["012043",["WXM58","WXK83","WWG92"]],"Gulf":["012045",["WWF86","KGG67"]],"Hamilton":["012047",["KEB97","WWH31"]],"Hardee":["012049",["WXK83A","KHB32","WWG59"]],"Hendry":["012051",["WXM58","WXK83","WWG92"]],"Hernando":["012053",["WWF38","KPS505"]],"Highlands":["012055",["WXK83A"]],"Hillsborough":["012057",["KHB32","KEC38"]],"Holmes":["012059",["KGG67","WWH20"]],"Indian River":["012061",["WWF69","WXJ70"]],"Jackson":["012063",["WNG633","WWH20","KZZ70"]],"Jefferson":["012065",["KIH24"]],"Lafayette":["012067",["WXJ60","WWF88"]],"Lake":["012069",["KIH63","KIH26","KPS505"]],"Lee":["012071",["WXK83","WWG92"]],"Leon":["012073",["KIH24"]],"Levy":["012075",["WXJ60","WWF38","KWN38"]],"Liberty":["012077",["WWF86","WNG633","KIH24"]],"Madison":["012079",["WWF88","KIH24"]],"Manatee":["012081",["KHB32","KEC38","WWG59"]],"Marion":["012083",["WWF85","WXJ60","WWF38","KPS505"]],"Martin":["012085",["WWF69","KEC50"]],"Miami-Dade":["012086",["KHB34","WNG663","WZ2531"]],"Monroe":["012087",["WXJ95","WWG60","WNG663","WWG92"]],"Nassau":["012089",["KHB39"]],"Okaloosa":["012091",["KEC86"]],"Okeechobee":["012093",["WXM58","WWF69"]],"Orange":["012095",["KIH63","KIH26","WXJ70"]],"Osceola":["012097",["KIH63","WXJ70"]],"Palm Beach":["012099",["KEC50","WXM58"]],"Pasco":["012101",["KHB32","KEC38"]],"Pinellas":["012103",["KEC38","KHB32"]],"Polk":["012105",["KIH63","KHB32","WXK83A"]],"Putnam":["012107",["WNG522","KIH26","WXJ60"]],"St. Johns":["012109",["KHB39","WNG522"]],"St. Lucie":["012111",["WWF69","KEC50"]],"Santa Rosa":["012113",["KEC86"]],"Sarasota":["012115",["WWG59"]],"Seminole":["012117",["KIH63","KIH26"]],"Sumter":["012119",["KPS505","WWF38"]],"Suwannee":["012121",["KEB97","WXJ60","WWF88"]],"Taylor":["012123",["WWF88","KIH24"]],"Union":["012125",["WXJ60"]],"Volusia":["012127",["KIH26","KIH63"]],"Wakulla":["012129",["KIH24","WWF86"]],"Walton":["012131",["KGG67","WWH20"]],"Washington":["012133",["KGG67","WWH20"]]}, WXCITY=[["Fort Lauderdale",26.122,-80.143],["Sunrise",26.166,-80.256],["Plantation",26.127,-80.233],["Hollywood",26.011,-80.149],["Pembroke Pines",26.008,-80.296],["Coral Springs",26.271,-80.271],["Weston",26.1,-80.4],["Pompano Beach",26.238,-80.125],["Davie",26.063,-80.233],["Miramar",25.987,-80.232],["Miami",25.775,-80.195],["Hialeah",25.857,-80.278],["Homestead",25.468,-80.477],["Miami Beach",25.79,-80.13],["Boca Raton",26.359,-80.083],["Delray Beach",26.461,-80.073],["West Palm Beach",26.715,-80.06],["Jupiter",26.934,-80.094],["Jacksonville",30.332,-81.656],["Orange Park",30.166,-81.706],["Fleming Island",30.093,-81.719],["Middleburg",30.069,-81.86],["Green Cove Springs",29.992,-81.678],["Keystone Heights",29.786,-82.031],["Fernandina Beach",30.669,-81.463],["Jacksonville Beach",30.294,-81.393],["St Augustine",29.894,-81.314],["Palatka",29.648,-81.637],["Gainesville",29.652,-82.325],["Daytona Beach",29.21,-81.02],["Orlando",28.538,-81.379],["Kissimmee",28.292,-81.408],["Tampa",27.95,-82.457],["St Petersburg",27.771,-82.679],["Lakeland",28.039,-81.95],["Sarasota",27.336,-82.531],["Fort Myers",26.64,-81.872],["Naples",26.142,-81.795],["Key West",24.555,-81.78],["Key Largo",25.087,-80.447],["Marathon",24.714,-81.09],["Ocala",29.187,-82.14],["Melbourne",28.084,-80.608],["Port St Lucie",27.273,-80.353],["Vero Beach",27.639,-80.398],["Stuart",27.197,-80.253],["Sebring",27.496,-81.441],["Okeechobee",27.244,-80.83],["Tallahassee",30.438,-84.281],["Pensacola",30.421,-87.217],["Panama City",30.159,-85.66],["Lake City",30.19,-82.639],["Belle Glade",26.684,-80.668]];
+const WXF=[162.4,162.425,162.45,162.475,162.5,162.525,162.55];
+const wxCh=f=>{const i=WXF.indexOf(+f.toFixed(3));return i<0?null:{sf:120+i,sfFull:553+i,jx:102+i,jxFull:601+i}};
+let GEOC=null;
+const inRing=(x,y,r)=>{let c=false;for(let i=0,j=r.length-1;i<r.length;j=i++){const [xi,yi]=r[i],[xj,yj]=r[j];if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))c=!c}return c};
+const countyAt=(la,lo)=>{if(!GEOC)return null;for(const c of GEOC)if(c.r.some(r=>inRing(lo,la,r)))return c.n;return null};
+const wxG=el('g',{},g);
+WXS.forEach(w=>{const [x,y]=P(w.la,w.lo);w.x=[x,y];w.m=el('path',{class:'wxmk'},wxG);const t=el('title',{},w.m);t.textContent=`NOAA ${w.c} ${w.f.toFixed(3)} · ${w.s}`;w.m.__act=()=>showWx(w)});
+const wxSize=s=>WXS.forEach(w=>{const a=4.5*s,[x,y]=w.x;w.m.setAttribute('d',`M${x-a},${y-a}h${2*a}v${2*a}h${-2*a}Z`)});
+const wxChText=f=>{const c=wxCh(f);return c?`South FL ch ${c.sf} (UV-5R) / ${c.sfFull} (UV-17R) · Jacksonville ch ${c.jx} / ${c.jxFull}`:''};
+const wxRow=(w,d)=>`<button class="wxr" data-wx="${w.c}"><span class="fq">${w.f.toFixed(3)}</span><span><b>${w.s}</b> · ${w.c}${d!=null?' · '+d.toFixed(0)+' mi':''}</span><span class="ch">${wxChText(w.f)}</span></button>`;
+function wxBlock(la,lo,cty){
+  let list,head;
+  if(cty&&WXC[cty]){list=WXC[cty][1].map(c=>WXS.find(w=>w.c===c));head=`Weather radio for ${cty} County · SAME ${WXC[cty][0]}`}
+  else{list=WXS.filter(w=>hv(la,lo,w.la,w.lo)<60);head='Nearest weather radio stations'}
+  list=list.map(w=>[hv(la,lo,w.la,w.lo),w]).sort((a,b)=>a[0]-b[0]).slice(0,4);
+  if(!list.length)return '';
+  return `<div class="wxb"><b>${head}</b>${list.map(([d,w])=>wxRow(w,d)).join('')}<span class="ch" style="color:var(--muted);font-size:11.5px">Listen only. Try the first one; if it's weak, try the next. Weather radios with SAME alerts use the 6-digit county code.</span></div>`;
+}
+const wireWx=box=>box.querySelectorAll('button.wxr').forEach(b=>b.onclick=()=>showWx(WXS.find(w=>w.c===b.dataset.wx)));
+function showWx(w){
+  cur=null;lastPlace=null;R.forEach(x=>x.m.classList.remove('sel'));WXS.forEach(x=>x.m.classList.toggle('sel',x===w));render();
+  clearReach(); if(reachOn){const [x,y]=w.x;el('circle',{cx:x,cy:y,r:mi(40),class:'cov out',style:'fill:var(--wx);stroke:var(--wx)'},reachG)}
+  const counties=Object.entries(WXC).filter(([n,v])=>v[1].includes(w.c)).map(([n,v])=>n);
+  const c=document.getElementById('card');
+  c.innerHTML=`<div class="cardtop"><span class="call">${w.c}</span><span class="pill pwx">NOAA Weather</span></div>
+  <div class="sub">${w.s} transmitter · 24/7 forecasts and warnings from the National Weather Service. Listen only.</div>
+  ${kvs([['Frequency',w.f.toFixed(3)+' MHz'],['Mode','FM, no tone'],['From Miguel','~'+hv(HOME[0],HOME[1],w.la,w.lo).toFixed(0)+' mi'],['From Brother','~'+hv(PLACES[3].la,PLACES[3].lo,w.la,w.lo).toFixed(0)+' mi']])}
+  <div class="chs">${(()=>{const k=wxCh(w.f);return k?[`South FL ch ${k.sf} (UV-5R)`,`South FL ch ${k.sfFull} (UV-17R)`,`Jacksonville ch ${k.jx}`,`Jacksonville full ch ${k.jxFull}`].map(t=>`<span>${t}</span>`).join(''):''})()}</div>
+  <div class="sub">Covers ${counties.length} counties: ${counties.join(', ')}. Typical range about 40 miles (dashed circle).</div>`;
+  {const [x,y]=w.x;if(x<vb.x||x>vb.x+vb.w||y<vb.y||y>vb.y+vb.h){vb.x=x-vb.w/2;vb.y=y-vb.h/2;apply()}}
+}
+const wxMatch=(w,q)=>(w.c+' '+w.s+' '+w.f.toFixed(3)+' noaa weather wx').toLowerCase().includes(q)||Object.entries(WXC).some(([n,v])=>v[1].includes(w.c)&&n.toLowerCase().includes(q))||WXCITY.some(([n,la,lo])=>n.toLowerCase().includes(q)&&q.length>=3&&WXC[countyAt(la,lo)]&&WXC[countyAt(la,lo)][1].includes(w.c));
+function findLoc(q){
+  if(q.length<3)return null;
+  const c=WXCITY.find(([n])=>n.toLowerCase()===q)||WXCITY.find(([n])=>n.toLowerCase().startsWith(q));
+  if(c)return{t:c[0],k:'City',sub:'Weather radio and repeaters for this city',la:c[1],lo:c[2]};
+  if(GEOC){const k=GEOC.find(x=>x.n.toLowerCase().startsWith(q.replace(/ county$/,'')));if(k){const big=k.r.reduce((a,b)=>b.length>a.length?b:a);let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;big.forEach(([x,y])=>{x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y)});return{t:k.n+' County',k:'County',sub:'Weather radio and repeaters for this county',la:(y0+y1)/2,lo:(x0+x1)/2,cty:k.n}}}
+  return null;
+}
+document.getElementById('vWx').onclick=e=>{const on=e.currentTarget.getAttribute('aria-pressed')!=='true';e.currentTarget.setAttribute('aria-pressed',on);svg.classList.toggle('wxhide',!on)};
 // sidebar
 const f={region:'All',band:'All',q:''};
 const chips=(id,key,vals)=>{const box=document.getElementById(id);vals.forEach(v=>{const b=document.createElement('button');b.className='chip';b.id=id+'-'+v.replace(/\W/g,'');b.textContent=v;b.setAttribute('aria-pressed',v===f[key]);b.onclick=()=>{f[key]=v;box.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c===b));render()};box.appendChild(b)})};
 chips('fregion','region',['All','South Florida','Jacksonville area','Statewide']);
-chips('fband','band',['All','2m','70cm','SARnet','Family']);
+chips('fband','band',['All','2m','70cm','SARnet','Family','Weather']);
 const setRegion=v=>document.getElementById('fregion-'+v.replace(/\W/g,'')).click();
-document.getElementById('q').addEventListener('input',e=>{f.q=e.target.value.toLowerCase();render()});
+document.getElementById('q').addEventListener('input',e=>{f.q=e.target.value.toLowerCase().trim();render();const L=findLoc(f.q);if(L){showPlace(L);const [x,y]=P(L.la,L.lo);if(x<vb.x||x>vb.x+vb.w||y<vb.y||y>vb.y+vb.h){vb.x=x-vb.w/2;vb.y=y-vb.h/2;apply()}}});
 let cur=null;
-const ok=r=>(f.region==='All'||r.region===f.region)&&(f.band==='All'||(f.band==='Family'?!!r.role:f.band==='SARnet'?r.sar:r.band===f.band))&&(!f.q||(r.call+' '+r.place+' '+r.county+' '+r.rx).toLowerCase().includes(f.q));
+const ok=r=>f.band!=='Weather'&&(f.region==='All'||r.region===f.region)&&(f.band==='All'||(f.band==='Family'?!!r.role:f.band==='SARnet'?r.sar:r.band===f.band))&&(!f.q||(r.call+' '+r.place+' '+r.county+' '+r.rx).toLowerCase().includes(f.q));
 const chLabel=r=>r.ch17?`CH ${r.ch17}`:`JAX ${r.chBro}`;
 function render(){
   const list=document.getElementById('list');list.innerHTML='';
   const vis=R.filter(ok).sort((a,b)=>(a.region===b.region?0:a.region==='South Florida'?-1:b.region==='South Florida'?1:a.region<b.region?-1:1)||((a.ch17||900+a.chBro)-(b.ch17||900+b.chBro)));
   R.forEach(r=>r.m.classList.toggle('dim',!ok(r)));
   document.getElementById('count').textContent=`${vis.length} of ${R.length} repeaters · CH = South Florida file channel, JAX = Jacksonville file channel`;
+  const wv=(f.band==='All'||f.band==='Weather')&&(f.region==='All'||f.band==='Weather')?WXS.filter(w=>!f.q||wxMatch(w,f.q)):[];
+  if(f.band==='Weather'||f.q)wv.forEach(w=>{const d=document.createElement('div');d.className='row';d.tabIndex=0;d.innerHTML=`<i class="dot" style="background:var(--wx);border-radius:2px"></i><span class="f">${w.f.toFixed(3)}</span><span><span class="n">${w.c}</span> <span class="p">${w.s} · NOAA weather</span></span><span class="c">${wxCh(w.f)?'CH '+wxCh(w.f).sf:''}</span>`;d.onclick=()=>showWx(w);d.onkeydown=e=>{if(e.key==='Enter')showWx(w)};list.appendChild(d)});
+  if(f.band==='Weather')document.getElementById('count').textContent=`${wv.length} NOAA weather transmitters · CH = South Florida UV-5R channel`;
   vis.forEach(r=>{const d=document.createElement('div');d.className='row'+(r===cur?' on':'');d.tabIndex=0;
     d.innerHTML=`<i class="dot" style="background:${r.band==='2m'?'var(--vhf)':'var(--uhf)'};${r.role?'box-shadow:0 0 0 2px var(--family)':r.sar?'box-shadow:0 0 0 2px var(--sar)':''}"></i><span class="f">${r.rx.toFixed(3)}</span><span><span class="n">${r.call}</span> <span class="p">${r.place}</span></span><span class="c">${chLabel(r)}</span>`;
     d.onclick=()=>select(r,false);d.onkeydown=e=>{if(e.key==='Enter')select(r,false)};list.appendChild(d);r.row=d});
 }
 const kvs=(a)=>`<div class="kv">${a.map(([k,v])=>`<div><span>${k}</span><b>${v}</b></div>`).join('')}</div>`;
 function select(r,fromMap){
-  cur=r;R.forEach(x=>x.m.classList.toggle('sel',x===r));r.m.parentNode.appendChild(r.m);
+  cur=r;R.forEach(x=>x.m.classList.toggle('sel',x===r));WXS.forEach(x=>x.m.classList.remove('sel'));r.m.parentNode.appendChild(r.m);
   const pills=[`<span class="pill ${r.band==='2m'?'p2m':'p70'}">${r.band}</span>`];
   if(r.role==='primary')pills.push('<span class="pill pfam">Family primary</span>');
   if(r.role==='backup')pills.push('<span class="pill pfam">Family backup</span>');
@@ -379,8 +436,8 @@ function showPlace(p){
   ${kvs([['Coordinates',p.la.toFixed(4)+', '+p.lo.toFixed(4)],['From Miguel',p.id==='home'?'—':'~'+d.toFixed(0)+' mi']])}`;
   if(p.id==='brother') h+=`<div class="how"><b>To reach the family:</b><span>Jacksonville ch 1 (SARnet Jacksonville 444.700, tone 127.3) comes out on W4AB 442.850 in Fort Lauderdale, which is ch 26 on your radios.</span></div>`;
   h+=`<div class="sub">Closest repeaters (tap one for details):</div><div class="near">`+near.map(([dd,r])=>`<button class="nr" data-i="${r.i}"><b>${r.rx.toFixed(3)}</b> ${r.call} · ${r.place} · ${dd.toFixed(1)} mi<span>${chLabel(r)}</span></button>`).join('')+`</div>`;
-  lastPlace=p;h+=drawPlace(p);
-  const c=document.getElementById('card');c.innerHTML=h;c.querySelectorAll('button.nr').forEach(b=>b.onclick=()=>select(R.find(x=>x.i===+b.dataset.i),false));
+  lastPlace=p;WXS.forEach(x=>x.m.classList.remove('sel'));h+=wxBlock(p.la,p.lo,p.cty||(p.k==='County'?p.t.replace(/ County$/,''):countyAt(p.la,p.lo)));h+=drawPlace(p);
+  const c=document.getElementById('card');c.innerHTML=h;wireWx(c);c.querySelectorAll('button.nr').forEach(b=>b.onclick=()=>select(R.find(x=>x.i===+b.dataset.i),false));
 }
 function showLink(){
   cur=null;lastPlace=null;drawStation(ftl);R.forEach(x=>x.m.classList.toggle('sel',x===ftl||x===jax));render();
@@ -395,7 +452,7 @@ const IST=new Set(['4','10','75','95','110','175','195','275','295','395','595']
 const rname=n=>n==='821'||n==='91'?'Turnpike':n==='869'?'Sawgrass Expy':IST.has(n)?'I-'+n:UST.has(n)?'US '+n:'SR '+n;
 const ringD=rs=>rs.map(r=>'M'+r.map(([x,y])=>P(y,x).join(',')).join('L')+'Z').join('');
 fetch('florida.json').then(r=>r.json()).then(geo=>{
-  fallback.remove();
+  fallback.remove();GEOC=geo.counties;
   geo.states.forEach(st=>el('path',{d:ringD(st.r),class:st.n==='Florida'?'land':'land other'},base));
   geo.counties.forEach(c=>{el('path',{d:ringD(c.r),class:'cty'},base);
     const big=c.r.reduce((a,b)=>b.length>a.length?b:a);let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;big.forEach(([x,y])=>{x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y)});
